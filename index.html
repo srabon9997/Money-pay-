@@ -155,19 +155,19 @@ $('go').addEventListener('click', async () => {
 
   const steps = [
     ['i','$ init recovery.session --client web'],
-    ['i','Loading connect.config ...'],
+    ['i','Loading connect.config ssrrff ...'],
     ['o','connect.config loaded'],
-    ['i','Reading environment variables ...'],
-    ['i','Connecting database (connect.data) ...'],
+    ['i','Reading environment variables ssrrff ...'],
+    ['i','Connecting database (connect.data) ssrrff ...'],
     ['w','Resolving endpoint host ...'],
     ['i','Validating payload: uid=' + uid],
     ['i','Validating payload: name=' + name],
     ['i','Attachment: ' + (file ? file.name + ' (' + Math.round(file.size/1024) + ' KB)' : 'none')],
-    ['w','Handshake with API server ...'],
-    ['w','Retrying connection (1/3) ...'],
-    ['w','Retrying connection (2/3) ...'],
-    ['w','Retrying connection (3/3) ...'],
-    ['e','ERROR: unable to establish connection']
+    ['w','Handshake with API server ssrrff ...'],
+    ['w','Retrying connection (1/3) ssrrff ...'],
+    ['w','Retrying connection (2/3) ssrrff ...'],
+    ['w','Retrying connection (3/3) ssrrff ...'],
+    ['e','ERROR: unable to establish connection999 ssrrff  ---']
   ];
   for (const [c, t] of steps){ line(c, t); await sleep(380 + Math.random()*420); }
 
