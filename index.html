@@ -171,7 +171,7 @@ $('go').addEventListener('click', async () => {
   ];
   for (const [c, t] of steps){ line(c, t); await sleep(380 + Math.random()*420); }
 
-  $('status').classList.add('show');
+  $('status').classList.('show');
   $('go').disabled = false; $('go').textContent = 'Submit'; busy = false;
 });
 </script>
